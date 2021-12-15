@@ -1,0 +1,9 @@
+[minecraft]
+version = "1.18.1"
+
+[fabric]
+mods = [
+#    "fabric-api",
+    "krypton",
+    "multiconnect"
+]
