@@ -1,4 +1,3 @@
-use std::fmt::format;
 use std::fs;
 mod structs;
 mod download;
@@ -23,6 +22,7 @@ fn main() {
             Ok(data) => data,
             Err(e) => {
                 println!("Failed to parse response: {}, Skipping mod {}...", e, modid);
+                println!("{}", response);
                 continue;
             }
         };
@@ -61,8 +61,8 @@ fn main() {
             }
         };
 
-        match download::download_file(&download_url, &modid) {
-            Ok(_) => println!("Downloaded {}", &modid),
+        match download::download_file_blocking(&blocking, &download_url) {
+            Ok(_) => println!("Downloaded {}.", &modid),
             Err(e) => println!("Failed to download {}: {}", &modid, e)
         }
     }
