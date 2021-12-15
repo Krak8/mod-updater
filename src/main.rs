@@ -1,3 +1,4 @@
+use std::fmt::format;
 use std::fs;
 mod structs;
 mod download;
@@ -13,12 +14,18 @@ fn main() {
     let blocking = reqwest::blocking::Client::new();
 
     for modid in &config.fabric.mods {
+        println!("Downloading {}", modid);
         let response = &blocking.get(format!("https://api.modrinth.com/api/v1/mod/{}", modid))
             .send().expect("Failed to send request")
             .text().expect("Failed to get response");
 
-        let data = serde_json::from_str::<structs::modrinth_mod::Root>(response.as_str())
-            .expect("Failed to parse response");
+        let data = match serde_json::from_str::<structs::modrinth_mod::Root>(response.as_str()) {
+            Ok(data) => data,
+            Err(e) => {
+                println!("Failed to parse response: {}, Skipping mod {}...", e, modid);
+                continue;
+            }
+        };
 
         let mut counter = 1;
         let mut downloads = Vec::new();
@@ -29,8 +36,14 @@ fn main() {
                 .send().expect("Failed to send request")
                 .text().expect("Failed to get response");
 
-            let data = serde_json::from_str::<structs::modrinth_version::Root>(response.as_str())
-                .expect("Failed to parse response");
+            let data = match serde_json::from_str::<structs::modrinth_version::Root>(response.as_str()) {
+                Ok(data) => data,
+                Err(e) => {
+                    println!("Got Response: {}", response);
+                    println!("Failed to parse response: {}, Skipping version {}...", e, version);
+                    continue;
+                }
+            };
 
             if data.game_versions.contains(&minecraft_version) {
                 println!("Mod {}, Versions: {:#?}, Download Link: {}", &modid, &data.game_versions, &data.files[0].url);
@@ -48,6 +61,9 @@ fn main() {
             }
         };
 
-        download::download_file_blocking(&blocking, download_url.as_str(), "./updatedMods/");
+        match download::download_file(&download_url, &modid) {
+            Ok(_) => println!("Downloaded {}", &modid),
+            Err(e) => println!("Failed to download {}: {}", &modid, e)
+        }
     }
 }
