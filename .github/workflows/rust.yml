@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
 
@@ -23,8 +23,15 @@ jobs:
       run: cargo build --release --verbose
     - name: Run tests
       run: cargo test --verbose
-    - name: Upload a Build Artifact
+    - name: Upload Windows
       uses: actions/upload-artifact@v2.3.0
       with:
         name: ${{ matrix.os }}
+        if: ${{ matrix.os === "windows-latest" }}
+        path: "\\target\\release\\*"
+    - name: Upload else
+      uses: actions/upload-artifact@v2.3.0
+      with:
+        name: ${{ matrix.os }}
+        if: ${{ matrix.os === "ubuntu-latest" }}
         path: "./target/release/*"
