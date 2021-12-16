@@ -27,11 +27,11 @@ jobs:
       uses: actions/upload-artifact@v2.3.0
       with:
         name: ${{ matrix.os }}
-        if: ${{ matrix.os === "windows-latest" }}
+        if: ${{ matrix.os == "windows-latest" }}
         path: "\\target\\release\\*"
     - name: Upload else
       uses: actions/upload-artifact@v2.3.0
       with:
         name: ${{ matrix.os }}
-        if: ${{ matrix.os === "ubuntu-latest" }}
+        if: ${{ matrix.os == "ubuntu-latest" }}
         path: "./target/release/*"
