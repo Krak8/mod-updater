@@ -6,7 +6,7 @@ pub fn download_file_blocking(client: &reqwest::blocking::Client, url: &str) -> 
         Ok(response) => response,
         Err(e) => return Err(io::Error::new(io::ErrorKind::Other, e)),
     };
-    let mut file = match File::create(format!("./updatedMods/{}", match url.split("/").last() {
+    let mut file = match File::create(format!("./mods/{}", match url.split("/").last() {
         Some(file) => file,
         None => return Err(io::Error::new(io::ErrorKind::Other, "No file name found")),
     })) {

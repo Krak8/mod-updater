@@ -21,8 +21,7 @@ fn main() {
 
         let data = match serde_json::from_str::<structs::modrinth_mod::Root>(response.as_str()) {
             Ok(data) => data,
-            Err(e) => {
-                println!("Failed to parse response: {}, Skipping mod {}...", e, modid);
+            Err(_) => {
                 continue;
             }
         };
@@ -55,7 +54,7 @@ fn main() {
             }
             counter += 1;
 
-            version_bar.set_message(format!("[{}] Checking {} out of {}", &modid, &counter, &total));
+            version_bar.set_message(format!("[{}] Checking {} out of {}", &modid, &counter-1, &total));
             version_bar.tick();
         }
         version_bar.finish();
@@ -63,7 +62,7 @@ fn main() {
         let download_url = match downloads.pop() {
             Some(str) => str,
             None => {
-                println!("Cannot find mod {} for {}", &modid, &minecraft_version);
+                println!("Warning: Cannot find mod {} for {}", &modid, &minecraft_version);
                 continue;
             }
         };
