@@ -3,7 +3,17 @@ version = "1.18.1"
 
 [fabric]
 mods = [
-#    "fabric-api",
+    "fabric-api",
     "krypton",
-    "multiconnect"
+    "multiconnect",
+    "sodium",
+    "iris",
+    "ferrite-core",
+    "lithium",
+    "lazydfu",
+    "modmenu",
+    "starlight",
+    "spark",
+    "smoothboot-fabric",
+    "hydrogen"
 ]
