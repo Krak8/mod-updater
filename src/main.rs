@@ -1,4 +1,5 @@
 use std::fs;
+use std::sync::{Arc, Mutex};
 
 mod structs;
 mod download;
@@ -24,8 +25,9 @@ fn main() {
             Err(_) => return
         };
 
+        let mut downloads = Arc::new(Mutex::new(Vec::new())); // I FINALLY KNOW HOW TO USE THIS LMAO
+
         &data.versions.par_iter().for_each(|version| {
-            let mut downloads = Vec::new();
             let res = &blocking.get(format!("https://api.modrinth.com/api/v1/version/{}", version))
                 .send().expect("Failed to send request")
                 .text().expect("Failed to get response");
@@ -37,20 +39,23 @@ fn main() {
 
             if data.game_versions.contains(&minecraft_version) {
                 let download_url = data.files[0].url.clone();
-                let _ = downloads.push(download_url);
-            }
-
-            let download_url = match downloads.pop() {
-                Some(str) => str,
-                None => {
-                    return
-                }
-            };
-
-            match download::download_file_blocking(&blocking, &download_url) {
-                Ok(_) => println!("Downloaded {}.", &modid),
-                Err(e) => println!("Failed to download {}: {}", &modid, e)
+                let _ = &downloads.clone().lock().unwrap().push(download_url);
             }
         });
+
+        let mut download_clone = &downloads.clone();
+
+        let download_url = match download_clone.lock().unwrap().pop() {
+            Some(str) => str,
+            None => {
+                println!("No download found for {}", modid);
+                return
+            }
+        };
+
+        match download::download_file_blocking(&blocking, &download_url) {
+            Ok(_) => println!("Downloaded {}.", &modid),
+            Err(e) => println!("Failed to download {}: {}", &modid, e)
+        }
     });
 }

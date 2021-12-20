@@ -15,5 +15,17 @@ mods = [
     "starlight",
     "spark",
     "smoothboot-fabric",
-    "hydrogen"
+    "hydrogen",
+    "c2me-fabric",
+    "inspecio",
+    "lambdynamiclights",
+    "lambdabettergrass",
+    "advancementinfo",
+    "visual-overhaul",
+    "charmonium",
+    "chime",
+    "extrasounds",
+    "notenoughcrashes",
+    "presence-footsteps",
+    "stepup"
 ]
