@@ -47,5 +47,5 @@ jobs:
     
     - uses: actions/upload-artifact@v2.3.0
       with:
-        name: "Windows Executable"
+        name: "Windows-Executable"
         path: ".\\target\\release\\*.exe"
