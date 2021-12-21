@@ -15,7 +15,7 @@ fn main() {
     let minecraft_version = &config.minecraft.version;
     let blocking = reqwest::blocking::Client::new();
 
-    &config.fabric.mods.par_iter().for_each(move |modid| {
+    let _ = &config.fabric.mods.par_iter().for_each(move |modid| {
         let res = blocking.get(&format!("https://api.modrinth.com/api/v1/mod/{}", modid))
             .send().expect("Failed to send request")
             .text().expect("Failed to get response");
@@ -25,9 +25,9 @@ fn main() {
             Err(_) => return
         };
 
-        let mut downloads = Arc::new(Mutex::new(Vec::new())); // I FINALLY KNOW HOW TO USE THIS LMAO
+        let downloads = Arc::new(Mutex::new(Vec::new()));
 
-        &data.versions.par_iter().for_each(|version| {
+        let _ = &data.versions.par_iter().for_each(|version| {
             let res = &blocking.get(format!("https://api.modrinth.com/api/v1/version/{}", version))
                 .send().expect("Failed to send request")
                 .text().expect("Failed to get response");
@@ -43,7 +43,7 @@ fn main() {
             }
         });
 
-        let mut download_clone = &downloads.clone();
+        let download_clone = &downloads.clone();
 
         let download_url = match download_clone.lock().unwrap().pop() {
             Some(str) => str,
