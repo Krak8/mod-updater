@@ -6,10 +6,12 @@ pub struct Root {
     pub fabric: Fabric
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Minecraft {
     pub version: String
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Fabric {
     pub mods: Vec<String>
 }
