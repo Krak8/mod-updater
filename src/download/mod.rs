@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 use rayon::iter::{ParallelIterator, IntoParallelRefIterator};
 
 pub fn download(config_path: &str, output_path: &str) {
-    let config: super::structs::config::Config = toml::from_str(
+    let config: super::structs::config::Root = toml::from_str(
         fs::read_to_string(config_path)
             .expect("Failed to read config.toml")
             .as_str()
@@ -69,7 +69,7 @@ fn download_file_blocking(client: &reqwest::blocking::Client, url: &str, output_
         Ok(response) => response,
         Err(e) => return Err(io::Error::new(io::ErrorKind::Other, e)),
     };
-    let mut file = match File::create(format!("./{}/{}", output_path, match url.split("/").last() {
+    let mut file = match File::create(format!("{}/{}", output_path, match url.split("/").last() {
         Some(file) => file,
         None => return Err(io::Error::new(io::ErrorKind::Other, "No file name found")),
     })) {
