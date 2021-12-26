@@ -1,17 +1,17 @@
-use serde_derive::Deserialize;
+use serde_derive::{Serialize, Deserialize};
 
-#[derive(Deserialize)]
-pub struct Config {
+#[derive(Serialize, Deserialize)]
+pub struct Root {
     pub minecraft: Minecraft,
     pub fabric: Fabric
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Minecraft {
     pub version: String
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Fabric {
     pub mods: Vec<String>
 }
