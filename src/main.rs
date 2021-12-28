@@ -1,9 +1,9 @@
 use clap::Parser;
+use std::sync::Arc;
 
-
-mod structs;
 mod download;
 mod scanner;
+mod structs;
 
 #[derive(Debug, Parser)]
 #[clap(about, version, author)]
@@ -23,12 +23,21 @@ struct Args {
 
 fn main() {
     let args: Args = Args::parse();
-
+    let reqwest = Arc::new(reqwest::blocking::Client::new());
     if args.scan {
-        scanner::scan_to_file();
+        scanner::scan_to_file(reqwest);
         println!("Saved config file to config.toml! Manually add any missing mods.");
-        return
-    } else {
-        download::download(args.config_path.as_str(), args.output_path.as_str());
+        return;
     }
+
+    download::download(
+        args.config_path.as_str(),
+        args.output_path.as_str(),
+        reqwest,
+    );
+    println!(
+        "Downloaded all the mods to {}! Manually add any missing mods.",
+        args.output_path
+    );
+    return;
 }
