@@ -9,19 +9,19 @@ mod structs;
 #[clap(about, version, author)]
 struct Args {
     /// The path to the config file
-    #[clap(short, long, default_value = "config.toml")]
+    #[clap(long, default_value = "config.toml")]
     config_path: String,
 
     /// The path to the directory where the files will be downloaded
-    #[clap(short, long, default_value = "mods")]
+    #[clap(long, default_value = "mods")]
     output_path: String,
 
     /// Scan the directory for mods and update them
-    #[clap(short, long)]
+    #[clap(long)]
     scan: bool,
 
     /// The output config file for scanning
-    #[clap(short, long)]
+    #[clap(long)]
     scan_output: String,
 }
 
