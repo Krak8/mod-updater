@@ -21,7 +21,7 @@ struct Args {
     scan: bool,
 
     /// The output config file for scanning
-    #[clap(long), default_value = "scanned_config.toml"]
+    #[clap(long, default_value = "scanned_config.toml")]
     scan_output: String,
 }
 
