@@ -29,3 +29,8 @@ mods = [
     "presence-footsteps",
     "stepup"
 ]
+
+[forge]
+mods = [
+    "terra"
+]

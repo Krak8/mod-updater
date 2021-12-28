@@ -2,6 +2,7 @@ use std::fs;
 use std::fs::File;
 use std::io;
 
+use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use reqwest::blocking::Client;
 use std::sync::{Arc, Mutex};
@@ -15,66 +16,77 @@ pub fn download(config_path: &str, output_path: &str, client: Arc<Client>) {
     .expect("Failed to parse config.toml");
 
     let minecraft_version = &config.minecraft.version;
+    let fabric_mods = config.fabric.mods;
 
-    let _ = &config.fabric.mods.par_iter().for_each(move |modid| {
-        let cloned_client = client.clone();
-        let res = cloned_client
-            .get(&format!("https://api.modrinth.com/api/v1/mod/{}", modid))
-            .send()
-            .expect("Failed to send request")
-            .text()
-            .expect("Failed to get response");
+    let progress_bar = ProgressBar::new(fabric_mods.len() as u64);
+    let progress_style = ProgressStyle::default_bar().template(
+        "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})",
+    );
+    progress_bar.set_style(progress_style);
 
-        let data = match serde_json::from_str::<super::structs::modrinth_mod::Root>(res.as_str()) {
-            Ok(data) => data,
-            Err(_) => return,
-        };
-
-        let downloads = Arc::new(Mutex::new(Vec::new()));
-
-        let _ = &data.versions.par_iter().for_each(|version| {
+    let _ = &fabric_mods
+        .par_iter()
+        .progress_with(progress_bar)
+        .for_each(move |modid| {
+            let cloned_client = client.clone();
             let res = cloned_client
-                .get(format!(
-                    "https://api.modrinth.com/api/v1/version/{}",
-                    version
-                ))
+                .get(&format!("https://api.modrinth.com/api/v1/mod/{}", modid))
                 .send()
                 .expect("Failed to send request")
                 .text()
                 .expect("Failed to get response");
 
-            let data = match serde_json::from_str::<super::structs::modrinth_version::Root>(
-                res.as_str(),
-            ) {
-                Ok(data) => data,
-                Err(_) => return,
+            let data =
+                match serde_json::from_str::<super::structs::modrinth_mod::Root>(res.as_str()) {
+                    Ok(data) => data,
+                    Err(_) => return,
+                };
+
+            let downloads = Arc::new(Mutex::new(Vec::new()));
+
+            let _ = &data.versions.par_iter().for_each(|version| {
+                let res = cloned_client
+                    .get(format!(
+                        "https://api.modrinth.com/api/v1/version/{}",
+                        version
+                    ))
+                    .send()
+                    .expect("Failed to send request")
+                    .text()
+                    .expect("Failed to get response");
+
+                let data = match serde_json::from_str::<super::structs::modrinth_version::Root>(
+                    res.as_str(),
+                ) {
+                    Ok(data) => data,
+                    Err(_) => return,
+                };
+
+                if data.game_versions.contains(&minecraft_version) {
+                    let download_url = data.files[0].url.clone();
+                    let _ = &downloads.clone().lock().unwrap().push(download_url);
+                }
+            });
+
+            let download_clone = &downloads.clone();
+
+            let download_url = match download_clone.lock().unwrap().pop() {
+                Some(str) => str,
+                None => {
+                    println!("No download found for {}.", modid);
+                    return;
+                }
             };
 
-            if data.game_versions.contains(&minecraft_version) {
-                let download_url = data.files[0].url.clone();
-                let _ = &downloads.clone().lock().unwrap().push(download_url);
+            if !fs::metadata(output_path).is_ok() {
+                let _ = fs::create_dir_all(output_path);
+            }
+
+            match download_file_blocking(cloned_client, &download_url, output_path) {
+                Ok(_) => return,
+                Err(e) => println!("Failed to download {}: {}", &modid, e),
             }
         });
-
-        let download_clone = &downloads.clone();
-
-        let download_url = match download_clone.lock().unwrap().pop() {
-            Some(str) => str,
-            None => {
-                println!("No download found for {}.", modid);
-                return;
-            }
-        };
-
-        if !fs::metadata(output_path).is_ok() {
-            let _ = fs::create_dir_all(output_path);
-        }
-
-        match download_file_blocking(cloned_client, &download_url, output_path) {
-            Ok(_) => println!("Downloaded {}.", &modid),
-            Err(e) => println!("Failed to download {}: {}", &modid, e),
-        }
-    });
 }
 
 fn download_file_blocking(client: Arc<Client>, url: &str, output_path: &str) -> io::Result<()> {

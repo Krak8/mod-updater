@@ -4,7 +4,7 @@ use std::io::{Read, Write};
 use std::sync::Arc;
 use std::{env, fs};
 
-pub fn scan_to_file(client: Arc<Client>) {
+pub fn scan_to_file(client: Arc<Client>, output: &String) {
     let current_dir = env::current_dir().expect("Failed to get current directory");
     let directory = fs::read_dir(current_dir).expect("Failed to read directory");
     let cloned_client = client.clone();
@@ -51,7 +51,7 @@ pub fn scan_to_file(client: Arc<Client>) {
         }
     }
     let mut scanned_config =
-        fs::File::create("scanned_config.toml").expect("Failed to create file.");
+        fs::File::create(output.as_str()).expect("Failed to create file.");
     scanned_config
         .write_all(toml::to_string(&config).unwrap().as_bytes())
         .unwrap();

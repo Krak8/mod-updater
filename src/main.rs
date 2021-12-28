@@ -19,13 +19,17 @@ struct Args {
     /// Scan the directory for mods and update them
     #[clap(short, long)]
     scan: bool,
+
+    /// The output config file for scanning
+    #[clap(short, long)]
+    scan_output: String,
 }
 
 fn main() {
     let args: Args = Args::parse();
     let reqwest = Arc::new(reqwest::blocking::Client::new());
     if args.scan {
-        scanner::scan_to_file(reqwest);
+        scanner::scan_to_file(reqwest, &args.scan_output);
         println!("Saved config file to config.toml! Manually add any missing mods.");
         return;
     }
@@ -36,7 +40,7 @@ fn main() {
         reqwest,
     );
     println!(
-        "Downloaded all the mods to {}! Manually add any missing mods.",
+        "Downloaded all the mods to {} folder! Manually add any missing mods.",
         args.output_path
     );
     return;
