@@ -16,7 +16,7 @@ mods = [
     "multiconnect"
 ]
 ```
-3. Profit
+3. Run the program, and it will download all the mods for you listed in the config file.
 ___
 ### Generate the config file
 1. Place the program inside your mods folder
