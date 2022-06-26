@@ -1,9 +1,15 @@
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub struct Root {
+pub struct Config {
+    pub download: Download,
     pub minecraft: Minecraft,
     pub fabric: Fabric,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Download {
+    pub output_path: String,
 }
 
 #[derive(Serialize, Deserialize)]

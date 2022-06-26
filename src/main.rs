@@ -1,5 +1,7 @@
 use clap::Parser;
-use std::sync::Arc;
+use std::{sync::Arc, fs};
+
+use crate::structs::config::Config;
 
 mod download;
 mod scanner;
@@ -11,10 +13,6 @@ struct Args {
     /// The path to the config file
     #[clap(long, default_value = "config.toml")]
     config_path: String,
-
-    /// The path to the directory where the files will be downloaded
-    #[clap(long, default_value = "mods")]
-    output_path: String,
 
     /// Scan the directory for mods and update them
     #[clap(long)]
@@ -30,18 +28,21 @@ fn main() {
     let reqwest = Arc::new(reqwest::blocking::Client::new());
     if args.scan {
         scanner::scan_to_file(reqwest, &args.scan_output);
-        println!("Saved config file to config.toml! Manually add any missing mods.");
+        println!("Saved config file to {}! Manually add any missing mods.", &args.scan_output);
         return;
     }
 
-    download::download(
-        args.config_path.as_str(),
-        args.output_path.as_str(),
-        reqwest,
-    );
+    let config: Config = toml::from_str(
+        fs::read_to_string(args.config_path.as_str())
+            .expect("Failed to read config.toml")
+            .as_str(),
+    ).expect("Failed to parse config.toml");
+
+    download::download(config, reqwest);
+
     println!(
         "Downloaded all the mods to {} folder! Manually add any missing mods.",
-        args.output_path
+        &config.download.output_path
     );
     return;
 }

@@ -1,3 +1,6 @@
+[download]
+output_path = 'mods'
+
 [minecraft]
 version = "1.18.1"
 

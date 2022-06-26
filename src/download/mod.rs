@@ -7,14 +7,10 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use reqwest::blocking::Client;
 use std::sync::{Arc, Mutex};
 
-pub fn download(config_path: &str, output_path: &str, client: Arc<Client>) {
-    let config: super::structs::config::Root = toml::from_str(
-        fs::read_to_string(config_path)
-            .expect("Failed to read config.toml")
-            .as_str(),
-    )
-    .expect("Failed to parse config.toml");
+use super::structs::config::Config;
 
+pub fn download(config: Config, client: Arc<Client>) {
+    let output_path = &config.download.output_path;
     let minecraft_version = &config.minecraft.version;
     let fabric_mods = config.fabric.mods;
 
@@ -39,7 +35,10 @@ pub fn download(config_path: &str, output_path: &str, client: Arc<Client>) {
             let data =
                 match serde_json::from_str::<super::structs::modrinth_mod::Root>(res.as_str()) {
                     Ok(data) => data,
-                    Err(_) => return,
+                    Err(_) => {
+                        println!("Failed to parse mod data for {}", &modid);
+                        return
+                    },
                 };
 
             let downloads = Arc::new(Mutex::new(Vec::new()));
@@ -59,7 +58,10 @@ pub fn download(config_path: &str, output_path: &str, client: Arc<Client>) {
                     res.as_str(),
                 ) {
                     Ok(data) => data,
-                    Err(_) => return,
+                    Err(_) => {
+                        println!("Failed to parse version data for {}", &version);
+                        return
+                    },
                 };
 
                 if data.game_versions.contains(&minecraft_version) {
