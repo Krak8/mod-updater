@@ -1,0 +1,51 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-UNIX:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    
+    - uses: actions/cache@v2.1.7
+      with:
+        path: './target/*'
+        key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.*') }}
+        restore-keys: ${{ runner.os }}-rust-
+        
+    - run: cargo build --release --verbose
+    
+    - uses: actions/upload-artifact@v2.3.0
+      with:
+        name: ${{ runner.os }}-Executable
+        path: "./target/release/mod_updater"
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - uses: actions/cache@v2.1.7
+      with:
+        path: '.\\target\\*'
+        key: ${{ runner.os }}-rust-${{ hashFiles('**\\Cargo.*') }}
+        restore-keys: ${{ runner.os }}-rust-
+        
+    - run: cargo build --release --verbose
+    
+    - uses: actions/upload-artifact@v2.3.0
+      with:
+        name: "Windows-Executable"
+        path: ".\\target\\release\\*.exe"
