@@ -8,6 +8,9 @@ This program updates all your mods to a newer/later version.
 2. Create a folder named `mods`;
 3. Add the following to the file:
 ```toml
+[download]
+output_path = 'mods'
+
 [minecraft]
 version = "1.18.1" # Or minecraft version you wanted
 
@@ -15,6 +18,11 @@ version = "1.18.1" # Or minecraft version you wanted
 mods = [
     "krypton", # add the mod id / slug from modrinth here
     "multiconnect"
+]
+
+[forge]
+mods = [
+    "terra" # same as above
 ]
 ```
 3. Run the program, and it will download all the mods for you listed in the config file.
