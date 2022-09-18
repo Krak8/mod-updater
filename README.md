@@ -1,6 +1,7 @@
 # Mod Updater
 This program updates all your mods to a newer/later version.
 
+
 ## To use:
 ### Creating the config file
 1. Create a file named `config.toml`
@@ -23,3 +24,7 @@ ___
 2. Run `mod_updater --scan`
 3. Fill in the missing mods by yourself, refer to the example config file
 4. Profit
+
+
+### Bash version:
+https://gist.github.com/not-ivy/6d8a9099adf3963dc166ef73e6a9a0bf
