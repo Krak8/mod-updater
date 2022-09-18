@@ -40,9 +40,6 @@ fn main() {
 
     download::download(config, reqwest);
 
-    println!(
-        "Downloaded all the mods to {} folder! Manually add any missing mods.",
-        &config.download.output_path
-    );
+    println!("Downloaded all the mods to the output folder! Manually add any missing mods.");
     return;
 }

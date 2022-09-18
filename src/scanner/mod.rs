@@ -8,11 +8,12 @@ pub fn scan_to_file(client: Arc<Client>, output: &String) {
     let current_dir = env::current_dir().expect("Failed to get current directory");
     let directory = fs::read_dir(current_dir).expect("Failed to read directory");
     let cloned_client = client.clone();
-    let mut config = config::Root {
+    let mut config = config::Config {
         minecraft: config::Minecraft {
             version: "EDIT_THIS".to_string(),
         },
         fabric: config::Fabric { mods: vec![] },
+        download: config::Download { output_path: ".".to_string() }
     };
     for item in directory {
         if item.is_ok() {
