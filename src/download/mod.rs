@@ -20,10 +20,12 @@ pub fn download(config: Config, client: Arc<Client>) {
     );
     progress_bar.set_style(progress_style);
 
+    let missed_mods: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(vec![]));
+
     let _ = &fabric_mods
         .par_iter()
         .progress_with(progress_bar)
-        .for_each(move |modid| {
+        .for_each(|modid| {
             let cloned_client = client.clone();
             let res = cloned_client
                 .get(&format!("https://api.modrinth.com/api/v1/mod/{}", modid))
@@ -36,7 +38,7 @@ pub fn download(config: Config, client: Arc<Client>) {
                 match serde_json::from_str::<super::structs::modrinth_mod::Root>(res.as_str()) {
                     Ok(data) => data,
                     Err(_) => {
-                        println!("Failed to parse mod data for {}", &modid);
+                        let _ = &missed_mods.clone().lock().unwrap().push(modid.to_string());
                         return
                     },
                 };
@@ -59,7 +61,6 @@ pub fn download(config: Config, client: Arc<Client>) {
                 ) {
                     Ok(data) => data,
                     Err(_) => {
-                        println!("Failed to parse version data for {}", &version);
                         return
                     },
                 };
@@ -75,7 +76,7 @@ pub fn download(config: Config, client: Arc<Client>) {
             let download_url = match download_clone.lock().unwrap().pop() {
                 Some(str) => str,
                 None => {
-                    println!("No download found for {}.", modid);
+                    let _ = &missed_mods.clone().lock().unwrap().push(modid.to_string());
                     return;
                 }
             };
@@ -86,9 +87,13 @@ pub fn download(config: Config, client: Arc<Client>) {
 
             match download_file_blocking(cloned_client, &download_url, output_path) {
                 Ok(_) => return,
-                Err(e) => println!("Failed to download {}: {}", &modid, e),
+                Err(_) => {
+                    let _ = &missed_mods.clone().lock().unwrap().push(modid.to_string());
+                    return
+                },
             }
         });
+        println!("Could not download these mods: {:#?}", &missed_mods.clone().lock().unwrap())
 }
 
 fn download_file_blocking(client: Arc<Client>, url: &str, output_path: &str) -> io::Result<()> {
